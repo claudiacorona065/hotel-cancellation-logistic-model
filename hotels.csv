@@ -1,0 +1,13 @@
+hotel_id,hotel_type,country,parking,total_rooms,restaurant,pool_and_spa,avg_review
+c6,City Hotel,FRA,False,118,False,False,3.41
+c4,City Hotel,SPA,False,126,True,False,4.75
+c1,City Hotel,SPA,True,98,True,True,4.04
+c3,City Hotel,SPA,False,123,True,True,3.56
+c5,City Hotel,FRA,False,43,True,False,4.08
+c7,City Hotel,SPA,False,127,True,False,4.1
+c2,City Hotel,FRA,False,51,False,False,4.17
+r1,Resort Hotel,POR,True,64,True,True,4.66
+r2,Resort Hotel,SPA,False,67,True,True,3.98
+r3,Resort Hotel,SPA,False,58,True,True,3.99
+r5,Resort Hotel,POR,False,39,True,False,3.99
+r4,Resort Hotel,SPA,False,45,True,False,4.54
