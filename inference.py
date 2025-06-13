@@ -13,10 +13,10 @@ def base_transform(df):
     df = df.copy()
     hoteles_df = pd.read_csv("hotels.csv")
 
-    df = df[df["reservation_status"] != "Booked"]
     df["arrival_date"] = pd.to_datetime(df["arrival_date"], errors="coerce")
     df["booking_date"] = pd.to_datetime(df["booking_date"], errors="coerce")
     df["reservation_status_date"] = pd.to_datetime(df["reservation_status_date"], errors="coerce")
+
     df["lead_time"] = (df["arrival_date"] - df["booking_date"]).dt.days
 
     df["arrival_month"] = df["arrival_date"].dt.month
@@ -38,12 +38,14 @@ def base_transform(df):
     for col in ["parking", "restaurant", "pool_and_spa"]:
         df[col] = df[col].astype(int)
 
-    df["required_car_parking_spaces"] = df["required_car_parking_spaces"].clip(upper=3).fillna(0)
-    df = df[df["stay_nights"] != 0]
-    df["stay_nights"] = df["stay_nights"].apply(lambda x: 21 if x > 21 else x)
-    df["lead_time"] = df["lead_time"].clip(upper=210)
+    # Protección contra división por 0 (para evitar infinitos)
+    df["stay_nights"] = df["stay_nights"].replace(0, pd.NA)
+    df["total_rooms"] = df["total_rooms"].replace(0, pd.NA)
 
-    df = df.fillna(pd.NA)
+    # Elimina infinitos y valores grandes peligrosos
+    df = df.replace([np.inf, -np.inf], pd.NA)
+    df = df.fillna(np.nan)
+
     df = df.loc[:, ~df.columns.duplicated()]
     return df.reset_index(drop=True)
 
@@ -51,7 +53,7 @@ def base_transform(df):
 def get_X():
     df = pd.read_csv(os.environ["INFERENCE_DATA_PATH"])
     X = base_transform(df)
-    return X, df  # X limpio, df original para juntar luego
+    return X, df
 
 
 if __name__ == "__main__":
@@ -66,10 +68,10 @@ if __name__ == "__main__":
     y_probs = pipe.predict_proba(X)[:, 1]
     y_pred = (y_probs >= threshold).astype(int)
 
-    results = original_df.loc[X.index].copy()
+    results = original_df.iloc[X.index].copy().reset_index(drop=True)
     results["prediction"] = y_pred
 
     output_path = os.environ.get("OUTPUT_PATH", "inference_output.csv")
     results.to_csv(output_path, index=False)
 
-    print(f"✅ Predicciones guardadas en {output_path}")
+    print(f" Predicciones guardadas en {output_path}")
